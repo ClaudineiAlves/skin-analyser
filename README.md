@@ -1,0 +1,75 @@
+# Skin Analyser — Triagem de Lesões Cutâneas com CNNs
+
+Pipeline de classificação de imagens dermatoscópicas do dataset público HAM10000: pré-processamento, separação de dados sem vazamento, comparação de 8 arquiteturas de rede neural convolucional em transfer learning e avaliação por métrica, com execuções registradas no Supabase e expostas em dashboard.
+
+> **Aviso.** Projeto de triagem com fins de estudo. Não é dispositivo médico, não faz diagnóstico e não substitui a avaliação de um profissional de saúde.
+
+![Pipeline: HAM10000 → OpenCV → split por patient_id → 8 CNNs em transfer learning → métricas → Supabase → dashboard](docs/pipeline.png)
+
+## Dados
+
+- **HAM10000** — Tschandl, Rosendahl e Kittler, *Scientific Data* 5, 180161 (2018). As imagens **não** são redistribuídas neste repositório: baixe-as da fonte oficial e respeite a licença do dataset.
+- **Separação por paciente.** Treino, validação e teste são separados por `patient_id`, com estratificação por classe: imagens do mesmo paciente nunca ficam em partições diferentes. Sem isso, o mesmo paciente aparece no treino e no teste, e a métrica sai otimista.
+
+## Pipeline
+
+- **Pré-processamento (OpenCV):** redimensionamento, normalização e augmentation, com a mesma entrada para todas as arquiteturas.
+- **Modelos:** 8 backbones em transfer learning, com pesos do ImageNet e congelados — MobileNetV2, EfficientNetB0, ResNet50, InceptionV3, DenseNet121, Xception, VGG19 e NASNetMobile —, sob protocolo idêntico (VGG16 também está disponível na configuração padrão). O construtor monta o ramo de imagem a partir da lista em `MODEL_CONFIG`: trocar de arquitetura é trocar configuração, sem duplicar código.
+- **Controle de overfitting:** augmentation, dropout, regularização L2, early stopping e redução de learning rate em platô, com o gap entre treino e validação acompanhado a cada época.
+- **Avaliação:** F1-score, recall, AUC e matriz de confusão por classe, priorizando recall na classe de maior risco clínico.
+
+<!-- Resultados — preencha com os números medidos antes de publicar:
+| Arquitetura | F1 | Recall (classe de maior risco) | AUC |
+|---|---|---|---|
+| … | | | |
+-->
+
+## Rastreamento e dashboard (`metrics_dashboard/`)
+
+Cada execução grava as métricas por lote e por imagem no Supabase (tabelas `batch_metrics` e `image_metrics`), no lugar da inspeção manual em notebook.
+
+- **Banco:** `supabase/migrations/001_dashboard_views.sql` cria views materializadas no PostgreSQL com os KPIs diários (acurácia, confiança média, sensibilidade e especificidade), o desempenho por classe e o monitoramento de drift. Com a extensão `pg_cron`, as views de KPIs e de desempenho são atualizadas a cada 5 minutos.
+- **Backend (`backend/main.py`):** FastAPI com schemas Pydantic, CORS e cache assíncrono em Redis nas rotas de leitura, para não recalcular a cada requisição. Rotas principais: `/api/v1/kpis`, `/api/v1/diagnosis-performance`, `/api/v1/confusion-matrix`, `/api/v1/time-series/{metric}`, `/api/v1/drift`, `/api/v1/cases-for-review` e `/health`.
+- **Frontend (`frontend/src/App.tsx`):** painel em React/TypeScript que consome o backend.
+- **`last.py`:** versão do painel em Streamlit + Plotly, lendo direto do Supabase.
+- **`data.py`:** gerador de dados sintéticos para testar o painel sem depender de uma execução real.
+
+## Engenharia
+
+Interface de terminal com Rich, log com níveis e cores via colorlog, type hints e dataclasses separando carga de dados, construção do modelo, treino e avaliação.
+
+## Como rodar
+
+**Pipeline.** O `system.py` foi exportado de um notebook do Google Colab e espera os CSVs do HAM10000 em `/content/data/`. As credenciais do Supabase vêm das variáveis de ambiente `SUPABASE_URL` e `SUPABASE_KEY` (ou da configuração `supabase`, com `URL` e `Key`) e nunca devem ser versionadas: `.env`, `*.env` e `config.json` estão no `.gitignore`.
+
+```bash
+pip install -r requirements.txt
+export SUPABASE_URL=... SUPABASE_KEY=...
+python system.py
+```
+
+**Backend do dashboard.** Aplique a migration no projeto Supabase e rode:
+
+```bash
+cd metrics_dashboard/backend
+pip install -r requirements.txt
+export SUPABASE_URL=... SUPABASE_KEY=...    # REDIS_URL padrão: redis://localhost:6379
+uvicorn main:app --reload
+```
+
+| Variável | Padrão | Uso |
+|---|---|---|
+| `SUPABASE_URL`, `SUPABASE_KEY` | — | Projeto Supabase com as tabelas e views |
+| `REDIS_URL` | `redis://localhost:6379` | Cache das rotas de leitura |
+| `CACHE_TTL` | `300` | Validade do cache, em segundos |
+| `ALERT_ACCURACY` | `0.85` | Limiar de alerta de acurácia |
+| `ALERT_MELANOMA_SENS` | `0.95` | Limiar de alerta de sensibilidade para melanoma |
+| `DRIFT_PSI` | `0.25` | Limiar de PSI para alerta de drift |
+
+## Stack
+
+Python · TensorFlow/Keras · Scikit-learn · OpenCV · Pandas · NumPy · Supabase (PostgreSQL + Storage) · FastAPI · Redis · React/TypeScript · Rich · colorlog
+
+## Autoria
+
+Desenvolvido por **Claudinei Alves Reis** — [LinkedIn](https://www.linkedin.com/in/claudinei-alves-reis/) · [Portfólio](https://claudineiportfolio.vercel.app)

@@ -1,0 +1,8 @@
+# Backend do dashboard (main.py) — pacotes importados pelo código, sem versão fixada.
+fastapi
+uvicorn[standard]
+pydantic
+pandas
+numpy
+supabase
+redis

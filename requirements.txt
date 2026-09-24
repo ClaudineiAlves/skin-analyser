@@ -1,0 +1,18 @@
+# Pipeline (system.py) — pacotes importados pelo código, sem versão fixada.
+tensorflow
+scikit-learn
+opencv-python
+pandas
+numpy
+matplotlib
+seaborn
+pillow
+requests
+rich
+colorlog
+tqdm
+python-dotenv
+supabase
+# Opcional: usados só na função de segmentação (torchvision deeplabv3_resnet50).
+# torch
+# torchvision

@@ -1,0 +1,35 @@
+# Repositório privado do TCC (histórico com chaves) — nunca entra aqui
+TCC/
+
+# Segredos
+.env
+.env.*
+*.env
+config.json
+
+# Ambientes, caches e IDE
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.idea/
+
+# Logs e bancos locais do pipeline
+logs/
+*.log
+*.db
+metrics_dashboard/z-other/
+
+# Dados e artefatos pesados (o HAM10000 não é redistribuído)
+data/
+datasets/
+*.jpg
+*.jpeg
+*.png
+!docs/*.png
+*.h5
+*.keras
+
+# Notebook e relatório: revise outputs e autoria antes de versionar
+*.ipynb
+*.docx
