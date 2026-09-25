@@ -2,6 +2,8 @@
 
 Pipeline de classificação de imagens dermatoscópicas do dataset público HAM10000: pré-processamento, separação de dados sem vazamento, comparação de 8 arquiteturas de rede neural convolucional em transfer learning e avaliação por métrica, com execuções registradas no Supabase e expostas em dashboard.
 
+> **Estado atual.** O projeto Supabase usado no TCC foi apagado, e com ele as tabelas do dataset e as métricas das execuções. O código do pipeline e do dashboard continua aqui, mas precisa de um projeto Supabase próprio (veja [Como rodar](#como-rodar)).
+
 > **Aviso.** Projeto de triagem com fins de estudo. Não é dispositivo médico, não faz diagnóstico e não substitui a avaliação de um profissional de saúde.
 
 ![Pipeline: HAM10000 → OpenCV → split por patient_id → 8 CNNs em transfer learning → métricas → Supabase → dashboard](docs/pipeline.png)
@@ -26,7 +28,7 @@ Pipeline de classificação de imagens dermatoscópicas do dataset público HAM1
 
 ## Rastreamento e dashboard (`metrics_dashboard/`)
 
-Cada execução grava as métricas por lote e por imagem no Supabase (tabelas `batch_metrics` e `image_metrics`), no lugar da inspeção manual em notebook.
+Cada execução grava as métricas por lote e por imagem no Supabase (tabelas `batch_metrics` e `image_metrics`), no lugar da inspeção manual em notebook. Para usar o rastreamento, crie um projeto Supabase e aplique a migration `supabase/migrations/001_dashboard_views.sql`.
 
 - **Banco:** `supabase/migrations/001_dashboard_views.sql` cria views materializadas no PostgreSQL com os KPIs diários (acurácia, confiança média, sensibilidade e especificidade), o desempenho por classe e o monitoramento de drift. Com a extensão `pg_cron`, as views de KPIs e de desempenho são atualizadas a cada 5 minutos.
 - **Backend (`backend/main.py`):** FastAPI com schemas Pydantic, CORS e cache assíncrono em Redis nas rotas de leitura, para não recalcular a cada requisição. Rotas principais: `/api/v1/kpis`, `/api/v1/diagnosis-performance`, `/api/v1/confusion-matrix`, `/api/v1/time-series/{metric}`, `/api/v1/drift`, `/api/v1/cases-for-review` e `/health`.
@@ -40,7 +42,7 @@ Interface de terminal com Rich, log com níveis e cores via colorlog, type hints
 
 ## Como rodar
 
-**Pipeline.** O `system.py` foi exportado de um notebook do Google Colab e espera os CSVs do HAM10000 em `/content/data/`. As credenciais do Supabase vêm das variáveis de ambiente `SUPABASE_URL` e `SUPABASE_KEY` (ou da configuração `supabase`, com `URL` e `Key`) e nunca devem ser versionadas: `.env`, `*.env` e `config.json` estão no `.gitignore`.
+**Pipeline.** O `system.py` foi exportado de um notebook do Google Colab e ainda não roda fora dele. Ele lê três CSVs em `/content/data/` (`ham10000_images.csv`, `ham10000_diagnoses.csv` e `ham10000_lesions.csv`), que eram exportações das tabelas do Supabase com os metadados do HAM10000 no formato do ISIC Archive (`isic_id`, `diagnosis_1` a `diagnosis_3`, `benign_malignant`, `melanocytic`). Essas tabelas não existem mais, e as URLs das imagens em `ham10000_images.csv` apontavam para o Storage do mesmo projeto: é preciso gerar os três CSVs a partir dos metadados do ISIC Archive, com URLs válidas, antes de rodar. As credenciais do Supabase vêm das variáveis de ambiente `SUPABASE_URL` e `SUPABASE_KEY` (ou da configuração `supabase`, com `URL` e `Key`) e nunca devem ser versionadas: `.env`, `*.env` e `config.json` estão no `.gitignore`.
 
 ```bash
 pip install -r requirements.txt
@@ -69,6 +71,10 @@ uvicorn main:app --reload
 ## Stack
 
 Python · TensorFlow/Keras · Scikit-learn · OpenCV · Pandas · NumPy · Supabase (PostgreSQL + Storage) · FastAPI · Redis · React/TypeScript · Rich · colorlog
+
+## Licença
+
+Código sob a [licença MIT](LICENSE). As imagens e os metadados do HAM10000 seguem a licença do dataset (CC BY-NC) e não fazem parte deste repositório.
 
 ## Autoria
 
