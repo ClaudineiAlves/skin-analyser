@@ -23,6 +23,7 @@ a pasta com o HAM10000_metadata.csv e as imagens .jpg (em qualquer subpasta).
 """
 
 import argparse
+import os
 import time
 from pathlib import Path
 
@@ -58,12 +59,24 @@ BACKBONES = {
     "nasnetmobile": (apps.NASNetMobile, apps.nasnet.preprocess_input),
 }
 
-KAGGLE_DIR = Path("/kaggle/input/skin-cancer-mnist-ham10000")
+
+def arquivos(raiz: Path):
+    """Todos os arquivos sob raiz, seguindo links simbólicos (o Path.rglob não segue)."""
+    for pasta, _, nomes in os.walk(raiz, followlinks=True):
+        for nome in sorted(nomes):
+            yield Path(pasta) / nome
+
+
+def achar_dataset() -> Path:
+    """No Kaggle, o caminho de montagem do dataset muda entre versões da interface."""
+    achado = next((p for p in arquivos(Path("/kaggle/input")) if p.name == "HAM10000_metadata.csv"), None)
+    return achado.parent if achado else Path("data")
 
 
 def args_da_linha_de_comando():
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    p.add_argument("--data-dir", type=Path, default=KAGGLE_DIR if KAGGLE_DIR.exists() else Path("data"))
+    p.add_argument("--data-dir", type=Path, default=None,
+                   help="pasta com o HAM10000_metadata.csv (padrão: procura em /kaggle/input, depois ./data)")
     p.add_argument("--archs", nargs="+", default=["efficientnetb0", "densenet121", "resnet50"],
                    choices=sorted(BACKBONES))
     p.add_argument("--epochs", type=int, default=30)
@@ -80,7 +93,10 @@ def carregar_metadados(data_dir: Path, limit: int | None) -> pd.DataFrame:
     meta = pd.read_csv(data_dir / "HAM10000_metadata.csv")
     # O dataset do Kaggle traz as imagens duplicadas em pastas com e sem maiúsculas;
     # o mapa por nome de arquivo fica com uma cópia de cada.
-    caminhos = {p.stem: str(p) for p in sorted(data_dir.rglob("*.jpg"))}
+    caminhos = {}
+    for p in arquivos(data_dir):
+        if p.suffix == ".jpg":
+            caminhos.setdefault(p.stem, str(p))
     meta["path"] = meta["image_id"].map(caminhos)
     faltando = meta["path"].isna().sum()
     if faltando:
@@ -169,6 +185,8 @@ def avaliar(y_true: np.ndarray, probs: np.ndarray) -> dict:
 
 def main():
     args = args_da_linha_de_comando()
+    args.data_dir = args.data_dir or achar_dataset()
+    print("dataset:", args.data_dir)
     tf.keras.utils.set_random_seed(args.seed)
     args.out.mkdir(parents=True, exist_ok=True)
 
