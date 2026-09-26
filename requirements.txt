@@ -1,4 +1,5 @@
-# Pipeline (system.py) — pacotes importados pelo código, sem versão fixada.
+# system.py (histórico do TCC): pacotes importados pelo notebook, sem versão, porque o
+# ambiente do Colab não foi registrado. Para reproduzir o treino: kaggle/requirements.txt.
 tensorflow
 scikit-learn
 opencv-python
