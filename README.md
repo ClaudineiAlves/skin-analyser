@@ -22,7 +22,22 @@ Pipeline de classificação de imagens dermatoscópicas do dataset público HAM1
 
 ## Resultados
 
-As métricas do treino original se perderam junto com o projeto Supabase. O script [`kaggle/treino_ham10000.py`](kaggle/treino_ham10000.py) refaz o treino com separação por lesão, e os números medidos entram aqui, com os arquivos em `results/`, quando o retreino rodar.
+Retreino de 26/09/2026 com [`kaggle/treino_ham10000.py`](kaggle/treino_ham10000.py), numa GPU do Kaggle. Teste com 2.014 imagens (20% das lesões), separado por lesão: nenhuma lesão aparece em mais de uma partição. Backbones do ImageNet congelados, pesos por classe e uma única execução (seed 42).
+
+| Arquitetura | Recall em melanoma | AUC melanoma | F1 macro | AUC macro (OvR) | Acurácia | Épocas |
+|---|---|---|---|---|---|---|
+| **ResNet50** | **0,73** (163 de 222) | **0,85** | **0,50** | **0,90** | 0,65 | 16 |
+| EfficientNetB0 | 0,59 (130 de 222) | 0,81 | 0,46 | 0,89 | 0,66 | 13 |
+| DenseNet121 | 0,54 (120 de 222) | 0,82 | 0,42 | 0,87 | 0,62 | 13 |
+
+- **A ResNet50 foi a melhor em todas as métricas por classe.** Das 222 imagens de melanoma do teste, identificou 163.
+- **A acurácia não é a métrica certa aqui.** O nevo (`nv`) é 67,7% do teste: um modelo que respondesse sempre "nv" teria 67,7% de acurácia e recall zero em melanoma. Os pesos por classe trocam acertos na classe majoritária por recall nas raras, por isso a acurácia fica abaixo desse patamar.
+- **Limites:** só a cabeça de classificação foi treinada (sem fine-tuning do backbone), há uma execução por arquitetura, sem intervalo de confiança, e não houve validação externa. Os próximos passos são fine-tuning das últimas camadas, validação cruzada agrupada por lesão e ajuste do limiar de decisão para melanoma.
+- Arquivos em [`results/`](results/): `metrics.csv`, o relatório e a matriz de confusão por arquitetura, o histórico de cada época e o `split.csv` com a partição de cada imagem.
+
+Dados: HAM10000, ViDIR Group, Department of Dermatology, Medical University of Vienna (licença CC BY-NC). Os resultados são de pesquisa, e o modelo não é produto.
+
+As métricas do treino original do TCC se perderam junto com o projeto Supabase.
 
 ## Rastreamento e dashboard (`metrics_dashboard/`)
 

@@ -1,0 +1,4 @@
+arch,accuracy,f1_macro,f1_weighted,recall_mel,auc_macro_ovr,auc_mel,epochs_run,train_seconds,n_train,n_val,n_test
+efficientnetb0,0.6564,0.4557,0.6902,0.5856,0.8896,0.8127,13,281,6409,1592,2014
+densenet121,0.6182,0.4163,0.6596,0.5405,0.8688,0.8237,13,481,6409,1592,2014
+resnet50,0.6534,0.5037,0.6908,0.7342,0.9042,0.8529,16,538,6409,1592,2014
