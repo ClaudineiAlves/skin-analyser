@@ -14,9 +14,11 @@ em relação ao notebook original, ambas para a métrica sair honesta:
 No Kaggle: crie um notebook, adicione o dataset "kmader/skin-cancer-mnist-ham10000",
 ligue a GPU e rode
     !python treino_ham10000.py
-O dataset é encontrado sozinho em /kaggle/input. Os resultados vão para ./results:
-metrics.csv (uma linha por arquitetura), relatório e matriz de confusão por
-arquitetura, e split.csv com a partição de cada imagem.
+O dataset é encontrado sozinho em /kaggle/input. Cada execução grava numa pasta
+própria, ./runs/<data e hora>: metrics.csv (uma linha por arquitetura), relatório e
+matriz de confusão por arquitetura, split.csv com a partição de cada imagem e
+ambiente.json com as versões usadas. A pasta results/ do repositório guarda só os
+resultados publicados e nunca é sobrescrita.
 
 Fora do Kaggle: pip install -r kaggle/requirements.txt e aponte --data-dir para a
 pasta com o HAM10000_metadata.csv e as imagens .jpg (em qualquer subpasta).
@@ -85,7 +87,8 @@ def args_da_linha_de_comando():
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--img-size", type=int, default=224)
-    p.add_argument("--out", type=Path, default=Path("results"))
+    p.add_argument("--out", type=Path, default=None,
+                   help="pasta de saída (padrão: runs/<data e hora>)")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--limit", type=int, default=None,
                    help="usa só as N primeiras imagens (teste rápido do script)")
@@ -189,7 +192,8 @@ def avaliar(y_true: np.ndarray, probs: np.ndarray) -> dict:
 def main():
     args = args_da_linha_de_comando()
     args.data_dir = args.data_dir or achar_dataset()
-    print("dataset:", args.data_dir)
+    args.out = args.out or Path("runs") / time.strftime("%Y-%m-%d_%H%M%S")
+    print("dataset:", args.data_dir, "| saída:", args.out)
     tf.keras.utils.set_random_seed(args.seed)
     args.out.mkdir(parents=True, exist_ok=True)
     ambiente = {
