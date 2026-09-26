@@ -6,7 +6,7 @@ Pipeline de classificação de imagens dermatoscópicas do dataset público HAM1
 
 > **Aviso.** Projeto de triagem com fins de estudo. Não é dispositivo médico, não faz diagnóstico e não substitui a avaliação de um profissional de saúde.
 
-![Pipeline: HAM10000 → OpenCV → split por patient_id → 8 CNNs em transfer learning → métricas → Supabase → dashboard](docs/pipeline.png)
+![Pipeline: HAM10000 → OpenCV → split por lesão (lesion_id), estratificado e sem vazamento → 8 CNNs em transfer learning → métricas → Supabase → dashboard](docs/pipeline.png)
 
 ## Dados
 
