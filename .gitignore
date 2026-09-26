@@ -33,3 +33,6 @@ datasets/
 # Notebook e relatório: revise outputs e autoria antes de versionar
 *.ipynb
 *.docx
+
+# Saída de cada execução do kaggle/treino_ham10000.py (os resultados publicados ficam em results/)
+runs/

@@ -55,7 +55,7 @@ Interface de terminal com Rich, log com níveis e cores via colorlog, type hints
 
 ## Como rodar
 
-**Retreino (recomendado).** O `kaggle/treino_ham10000.py` é autocontido: reimplementa o protocolo do `system.py` (backbones congelados do ImageNet, augmentation, dropout, L2, early stopping, redução do learning rate em platô e pesos por classe) e grava em `results/` o `metrics.csv` (acurácia, F1 macro, recall e AUC de melanoma, AUC macro), o relatório e a matriz de confusão por arquitetura, e a partição de cada imagem.
+**Retreino (recomendado).** O `kaggle/treino_ham10000.py` é autocontido: reimplementa o protocolo do `system.py` (backbones congelados do ImageNet, augmentation, dropout, L2, early stopping, redução do learning rate em platô e pesos por classe) e grava numa pasta por execução, `runs/<data e hora>/`, o `metrics.csv` (acurácia, F1 macro, recall e AUC de melanoma, AUC macro), o relatório e a matriz de confusão por arquitetura e a partição de cada imagem. A pasta `results/` guarda só os resultados publicados e o script nunca a sobrescreve.
 
 1. No Kaggle, crie um notebook, adicione o dataset `kmader/skin-cancer-mnist-ham10000` e ligue a GPU e a internet.
 2. Rode numa célula:
@@ -65,9 +65,9 @@ Interface de terminal com Rich, log com níveis e cores via colorlog, type hints
    !python skin-analyser/kaggle/treino_ham10000.py   # padrão: efficientnetb0 densenet121 resnet50
    ```
 
-3. Baixe a pasta `results/` pela aba Output do notebook.
+3. Baixe a pasta `runs/` pela aba Output do notebook.
 
-Fora do Kaggle, instale as versões testadas com `pip install -r kaggle/requirements.txt` (Python 3.12) e use `--data-dir` apontando para a pasta com o `HAM10000_metadata.csv` e as imagens. `--archs` escolhe entre as 8 arquiteturas, e `--limit 200 --epochs 1` faz um teste rápido. Cada execução grava as versões usadas em `results/ambiente.json`.
+Fora do Kaggle, instale as versões testadas com `pip install -r kaggle/requirements.txt` (Python 3.12) e use `--data-dir` apontando para a pasta com o `HAM10000_metadata.csv` e as imagens. `--archs` escolhe entre as 8 arquiteturas, e `--limit 200 --epochs 1` faz um teste rápido. Cada execução grava as versões usadas em `ambiente.json`, na própria pasta.
 
 **`system.py`: histórico do TCC.** É a exportação do notebook do Google Colab usado no TCC, mantida como registro e sem manutenção. O caminho reproduzível é o script do Kaggle acima. O `system.py` não roda fora do Colab. Ele lê três CSVs em `/content/data/` (`ham10000_images.csv`, `ham10000_diagnoses.csv` e `ham10000_lesions.csv`), que eram exportações das tabelas do Supabase com os metadados do HAM10000 no formato do ISIC Archive (`isic_id`, `diagnosis_1` a `diagnosis_3`, `benign_malignant`, `melanocytic`). Essas tabelas não existem mais, e as URLs das imagens em `ham10000_images.csv` apontavam para o Storage do mesmo projeto: é preciso gerar os três CSVs a partir dos metadados do ISIC Archive, com URLs válidas, antes de rodar. As credenciais do Supabase vêm das variáveis de ambiente `SUPABASE_URL` e `SUPABASE_KEY` (ou da configuração `supabase`, com `URL` e `Key`) e nunca devem ser versionadas: `.env`, `*.env` e `config.json` estão no `.gitignore`.
 
