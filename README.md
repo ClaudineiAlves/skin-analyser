@@ -67,9 +67,11 @@ Interface de terminal com Rich, log com níveis e cores via colorlog, type hints
 
 3. Baixe a pasta `results/` pela aba Output do notebook.
 
-Fora do Kaggle, instale `tensorflow`, `scikit-learn` e `pandas` e use `--data-dir` apontando para a pasta com o `HAM10000_metadata.csv` e as imagens. `--archs` escolhe entre as 8 arquiteturas, e `--limit 200 --epochs 1` faz um teste rápido.
+Fora do Kaggle, instale as versões testadas com `pip install -r kaggle/requirements.txt` (Python 3.12) e use `--data-dir` apontando para a pasta com o `HAM10000_metadata.csv` e as imagens. `--archs` escolhe entre as 8 arquiteturas, e `--limit 200 --epochs 1` faz um teste rápido. Cada execução grava as versões usadas em `results/ambiente.json`.
 
-**Pipeline original.** O `system.py` foi exportado de um notebook do Google Colab e ainda não roda fora dele. Ele lê três CSVs em `/content/data/` (`ham10000_images.csv`, `ham10000_diagnoses.csv` e `ham10000_lesions.csv`), que eram exportações das tabelas do Supabase com os metadados do HAM10000 no formato do ISIC Archive (`isic_id`, `diagnosis_1` a `diagnosis_3`, `benign_malignant`, `melanocytic`). Essas tabelas não existem mais, e as URLs das imagens em `ham10000_images.csv` apontavam para o Storage do mesmo projeto: é preciso gerar os três CSVs a partir dos metadados do ISIC Archive, com URLs válidas, antes de rodar. As credenciais do Supabase vêm das variáveis de ambiente `SUPABASE_URL` e `SUPABASE_KEY` (ou da configuração `supabase`, com `URL` e `Key`) e nunca devem ser versionadas: `.env`, `*.env` e `config.json` estão no `.gitignore`.
+**`system.py`: histórico do TCC.** É a exportação do notebook do Google Colab usado no TCC, mantida como registro e sem manutenção. O caminho reproduzível é o script do Kaggle acima. O `system.py` não roda fora do Colab. Ele lê três CSVs em `/content/data/` (`ham10000_images.csv`, `ham10000_diagnoses.csv` e `ham10000_lesions.csv`), que eram exportações das tabelas do Supabase com os metadados do HAM10000 no formato do ISIC Archive (`isic_id`, `diagnosis_1` a `diagnosis_3`, `benign_malignant`, `melanocytic`). Essas tabelas não existem mais, e as URLs das imagens em `ham10000_images.csv` apontavam para o Storage do mesmo projeto: é preciso gerar os três CSVs a partir dos metadados do ISIC Archive, com URLs válidas, antes de rodar. As credenciais do Supabase vêm das variáveis de ambiente `SUPABASE_URL` e `SUPABASE_KEY` (ou da configuração `supabase`, com `URL` e `Key`) e nunca devem ser versionadas: `.env`, `*.env` e `config.json` estão no `.gitignore`.
+
+O `requirements.txt` da raiz lista os pacotes que o notebook importa, sem versão: o ambiente do Colab não foi registrado.
 
 ```bash
 pip install -r requirements.txt

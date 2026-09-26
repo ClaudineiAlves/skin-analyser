@@ -18,17 +18,20 @@ O dataset é encontrado sozinho em /kaggle/input. Os resultados vão para ./resu
 metrics.csv (uma linha por arquitetura), relatório e matriz de confusão por
 arquitetura, e split.csv com a partição de cada imagem.
 
-Fora do Kaggle: pip install tensorflow scikit-learn pandas e aponte --data-dir para
-a pasta com o HAM10000_metadata.csv e as imagens .jpg (em qualquer subpasta).
+Fora do Kaggle: pip install -r kaggle/requirements.txt e aponte --data-dir para a
+pasta com o HAM10000_metadata.csv e as imagens .jpg (em qualquer subpasta).
 """
 
 import argparse
+import json
 import os
+import platform
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import sklearn
 import tensorflow as tf
 from sklearn.metrics import (
     accuracy_score,
@@ -189,6 +192,16 @@ def main():
     print("dataset:", args.data_dir)
     tf.keras.utils.set_random_seed(args.seed)
     args.out.mkdir(parents=True, exist_ok=True)
+    ambiente = {
+        "python": platform.python_version(),
+        "tensorflow": tf.__version__,
+        "keras": tf.keras.__version__,
+        "scikit-learn": sklearn.__version__,
+        "pandas": pd.__version__,
+        "numpy": np.__version__,
+        "gpus": [g.name for g in tf.config.list_physical_devices("GPU")],
+    }
+    (args.out / "ambiente.json").write_text(json.dumps(ambiente, indent=2) + "\n")
 
     meta = separar_por_lesao(carregar_metadados(args.data_dir, args.limit), args.seed)
     meta[["image_id", "lesion_id", "dx", "split"]].to_csv(args.out / "split.csv", index=False)

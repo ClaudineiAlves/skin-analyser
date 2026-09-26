@@ -1,0 +1,8 @@
+# Versões testadas com o treino_ham10000.py (Python 3.12), para rodar fora do Kaggle.
+# No Kaggle não precisa instalar nada: o ambiente já traz o TensorFlow.
+# Cada execução grava as versões realmente usadas em results/ambiente.json.
+tensorflow==2.21.0
+keras==3.15.1
+scikit-learn==1.9.1
+pandas==3.0.6
+numpy==2.5.3
