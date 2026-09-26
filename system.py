@@ -6478,9 +6478,6 @@ IMAGE_TABLE = "ham10000_images"
 DIAGNOSIS_TABLE = "ham10000_diagnoses"
 LESION_TABLE = "ham10000_lesions"
 # === Data Verify ===
-IMAGE_DATAFRAME_PATH = "/content/data/ham10000_lesions.csv"
-IMAGE_DATAFRAME_PATH = "/content/data/ham10000_diagnoses.csv"
-IMAGE_DATAFRAME_PATH = "/content/data/ham10000_images.csv"
 DATABASE_NAME = "HAM10000"
 # === Split Data ===
 # Maps the name of each model output to the number of classes it has.
